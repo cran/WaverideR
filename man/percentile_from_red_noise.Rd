@@ -39,7 +39,7 @@ omega_nr = 10)
 
 #increase n_simulations to better define the red noise spectral power curve
 mag_wt_red_noise <- model_red_noise_wt(wavelet=mag_wt,
-n_simulations=100,
+n_simulations=10, # Increase number for a better constrained result
 run_multicore=FALSE,
 verbose=FALSE)
 
@@ -47,8 +47,8 @@ verbose=FALSE)
 prob_curve <- percentile_from_red_noise(
 red_noise = mag_wt_red_noise,
 wavelet = mag_wt,
-percentile = 0.9
-)
+percentile = 0.9)
+
 }
 
 }
