@@ -8,6 +8,7 @@ retrack_wt_MC(
   wt_list = NULL,
   data_track = NULL,
   x_axis = NULL,
+  smoothing = c("auto"),
   nr_simulations = 50,
   seed_nr = 1337,
   verbose = FALSE,
@@ -37,16 +38,24 @@ retrack_wt_MC(
 }
 \arguments{
 \item{wt_list}{a list containing all the wavelet objects created using the
-link[WaverideR]{analyze_wavelet} wavelet function
-To create a list use the link[base]{list} function}
+\link[WaverideR]{analyze_wavelet} wavelet function
+To create a list use the \link[base]{list} function}
 
 \item{data_track}{a matrix containing all the tracked period values.
-To create the matrix use the link[base]{cbind} function and only add the
+To create the matrix use the \link[base]{cbind} function and only add the
 tracked period values so do not add the depth axis. When combining the
 tracked period values make sure that all curves have a similar depth
 spacing.}
 
 \item{x_axis}{The x-axis of the tracked period values}
+
+\item{smoothing}{setting the smoothing parameter and value to either "auto" which uses
+a automatic loess smoother,"loess" where one can specify Lowess smoothing
+parameter. or "window" where one can specific the window length of the moving
+average. one should specify the parameter and its value as vector
+#'@param wt_list a list containing all the wavelet objects created using the
+\link[WaverideR]{analyze_wavelet} wavelet function
+To create a list use the \link[base]{list} function}
 
 \item{nr_simulations}{The number of Monte-Carlo simulations which are to be
 conducted\code{Default=50}}
@@ -203,7 +212,7 @@ account all the age-models from the proxy records. The averaged out age-model
 does not take into account any small user errors during  the creation of the
 individual age-models nor does the averaging take into account the differences
 between the age-models and how the initial age-model of a certain proxy might
-be off in certain intervals. the link[WaverideR]{retrack_wt_MC} mitigates
+be off in certain intervals. the \link[WaverideR]{retrack_wt_MC} mitigates
 these problems by re-tracking periods of astronomical cycles in the wavelet
 spectra. The re-tracking is based on the information provided by the
 age-models constructed from the different proxy records.

@@ -71,8 +71,8 @@
 #'The eight column "time min x_times sd" is the time based on the tracked period min x times the standard deviation. \cr
 #'
 #' @author
-#' Code based on the \link[WaveletComp]{analyze.wavelet} function of the 'WaveletComp' R package
-#' and \link[biwavelet]{wt} function of the 'biwavelet' R package which are based on the
+#' Code based on the "analyze.wavelet" function of the 'WaveletComp' R package
+#' and "wt" function of the 'biwavelet' R package which are based on the
 #' wavelet 'MATLAB' code written by Christopher Torrence and Gibert P. Compo (1998).
 #' The assignment of the standard deviation of the uncertainty of the wavelet
 #' is based on the work of Gabor (1946) and Russell et al., (2016)
@@ -100,11 +100,10 @@
 #'Morlet, Jean, Georges Arens, Eliane Fourgeau, and Dominique Glard.
 #'"Wave propagation and sampling theory—Part I: Complex signal and scattering in multilayered media.
 #'" Geophysics 47, no. 2 (1982): 203-221.
-#'\url{https://pubs.geoscienceworld.org/geophysics/article/47/2/203/68601/Wave-propagation-and-sampling-theory-Part-I}
 #'
 #'J. Morlet, G. Arens, E. Fourgeau, D. Giard;
 #' Wave propagation and sampling theory; Part II, Sampling theory and complex waves.
-#'  Geophysics 1982 47 (2): 222–236. \url{https://pubs.geoscienceworld.org/geophysics/article/47/2/222/68604/Wave-propagation-and-sampling-theory-Part-II}
+#'  Geophysics 1982 47 (2): 222–236.
 #'
 #'
 #'@examples
@@ -161,8 +160,6 @@
 #'}
 #' @export
 #' @importFrom grDevices dev.new
-#' @importFrom WaveletComp analyze.wavelet
-#' @importFrom biwavelet wt
 #' @importFrom RColorBrewer brewer.pal.info
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
@@ -191,9 +188,6 @@
 #' @importFrom grDevices cm.colors
 #' @importFrom grDevices hcl.colors
 
-
-
-
 wavelet_uncertainty <- function(tracked_cycle = NULL,
                                 period_of_tracked_cycle = NULL,
                                 wavelet = NULL,
@@ -210,12 +204,15 @@ wavelet_uncertainty <- function(tracked_cycle = NULL,
   b <- (2 * sqrt(2 * log(2)))
   a <- ((8 * log(2) / (2 * pi)))
   k <- (ncycles / (8 * log(2))) * 2
+
   data$f0 <- (1 / data[, 2])
   data$df <- (a * data$f0) / k
   data$sd_morlet <- data$df / b
 
   sedrate_min <- 1 / (data$f0 - data$sd_morlet * multi)
   sedrate_plus <-  1 / (data$f0 + data$sd_morlet * multi)
+
+
 
 
   sedrate_min <- cbind(data[, 1], sedrate_min)
@@ -311,7 +308,6 @@ wavelet_uncertainty <- function(tracked_cycle = NULL,
 
  res <- plot_wavelet(
       wavelet = wavelet,
-      plot.COI = TRUE,
       n.levels = 100,
       palette_name = palette_name,
       color_brewer= color_brewer,
@@ -327,7 +323,6 @@ wavelet_uncertainty <- function(tracked_cycle = NULL,
       add_data = TRUE,
       add_avg = FALSE,
       add_MTM = FALSE,
-      siglvl = 0.95,
       demean_mtm = TRUE,
       detrend_mtm = TRUE,
       padfac_mtm = 5,

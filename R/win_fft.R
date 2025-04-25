@@ -2,7 +2,8 @@
 #'
 #' @description The \code{\link{win_fft}} function for conducts a windowed spectral analysis based on the fft
 #'
-#'@param data Input data set  should consist of a matrix with 2 columns with first column being depth and the second column being a proxy
+#'@param data Input data set  should consist of a matrix with 2 columns with
+#'first column being depth and the second column being a proxy
 #'@param padfac Pad record with zero, zero padding smooths out the spectra
 #'@param window_size size of the running window
 #'@param run_multicore Run function using multiple cores \code{Default="FALSE"}
@@ -44,7 +45,8 @@
 #'read the documentation of these packages. "\code{Default=grDevices}
 #'@param keep_editable Keep option to add extra features after plotting  \code{Default=FALSE}
 #' @param verbose Print text \code{Default=FALSE}.
-#' @param dev_new Opens a new plotting window to plot the plot, this guarantees  a "nice" looking plot however when plotting in an R markdown
+#' @param dev_new Opens a new plotting window to plot the plot, this
+#' guarantees  a "nice" looking plot however when plotting in an R markdown
 #'document the plot might not plot  \code{Default=FALSE}
 #'
 #' @author
@@ -101,8 +103,6 @@
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @importFrom tcltk setTkProgressBar
-#' @importFrom tcltk setTkProgressBar
 #' @importFrom foreach foreach
 #' @importFrom stats runif
 #' @importFrom stats sd
@@ -248,7 +248,7 @@ win_fft <- function(data = NULL,
   i <- 1 # needed to assign 1 to ijk to avoid note
   npts <- round(((window_size / dt)), 0)
 
-  fit <-  foreach (i = 1:simulations, .options.snow = opts) %dopar% {
+  fit <-  foreach (i = 1:simulations, .options.parallel   = opts) %dopar% {
     d_subsel <- d[i:(i + (window_size / dt - 1)),]
 
     demean = TRUE
@@ -282,15 +282,15 @@ win_fft <- function(data = NULL,
 
     fft.out <- data.frame(cbind(freq, amp, pwr, phase))
 
+
+    fft.out[,5] <-   uncertainty_freq <- freq/(2*pi*(window_size/(1/freq)))
+
     fft.out <- fft.out[fft.out[, 1] <= Nyq ,]
     fft.out <- fft.out[fft.out[, 1] > 0,]
 
 
-
-
-
     colnames(fft.out) <- c("Frequency", "Amplitude", "Power",
-                           "Phase")
+                           "Phase","uncertainty")
 
     lag0 <- d[1:(npts - 1), 2]
     lag1 <- d[2:npts, 2]
@@ -312,6 +312,7 @@ win_fft <- function(data = NULL,
                 2],
         fft.out[, 3],
         fft.out[, 4],
+        fft.out[, 5],
         chiCLAR * 100,
         AR,
         AR1_90,
@@ -324,6 +325,7 @@ win_fft <- function(data = NULL,
       "Amplitude",
       "Power",
       "Phase",
+      "uncertainty",
       "AR1_CL",
       "AR1_Fit",
       "AR1_90_power",
@@ -353,6 +355,11 @@ win_fft <- function(data = NULL,
     matrix(data = NA,
            ncol = nrow(dat),
            nrow = nrow(fit2[[1]]))
+  uncer_mat <-
+    matrix(data = NA,
+           ncol = nrow(dat),
+           nrow = nrow(fit2[[1]]))
+
 
   AR1_CL_mat <-
     matrix(data = NA,
@@ -385,11 +392,12 @@ win_fft <- function(data = NULL,
     Amplitude_mat[, kk] <- extract[, 2]
     Power_mat[, kk] <- extract[, 3]
     Phase_mat[, kk] <- extract[, 4]
-    AR1_CL_mat[, kk] <- extract[, 5]
-    AR1_Fit_mat[, kk] <- extract[, 6]
-    AR1_90_power_mat[, kk] <- extract[, 7]
-    AR1_95_power_mat[, kk] <- extract[, 8]
-    AR1_99_power_mat[, kk] <- extract[, 9]
+    uncer_mat[,kk] <- extract[, 5]
+    AR1_CL_mat[, kk] <- extract[, 6]
+    AR1_Fit_mat[, kk] <- extract[, 7]
+    AR1_90_power_mat[, kk] <- extract[, 8]
+    AR1_95_power_mat[, kk] <- extract[, 9]
+    AR1_99_power_mat[, kk] <- extract[, 10]
   }
 
 
@@ -400,6 +408,7 @@ win_fft <- function(data = NULL,
     Amplitude_mat = Amplitude_mat,
     Power_mat = Power_mat,
     Phase_mat = Phase_mat,
+    uncer_mat = uncer_mat,
     AR1_CL_mat = AR1_CL_mat,
     AR1_Fit_mat = AR1_Fit_mat,
     AR1_90_power_mat = AR1_90_power_mat,

@@ -115,8 +115,6 @@
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @importFrom tcltk setTkProgressBar
-#' @importFrom tcltk setTkProgressBar
 #' @importFrom foreach foreach
 #' @importFrom stats runif
 #' @importFrom stats sd
@@ -236,7 +234,7 @@ flmw  <- function(wavelet = NULL,
 
 
   fit <-
-    foreach (ijk = 1:simulations, .options.snow = opts) %dopar% {
+    foreach (ijk = 1:simulations, .options.parallel   = opts) %dopar% {
       fits <- matrix(data = NA,
                      nrow = nrow(testsedrates),
                      ncol = 8)

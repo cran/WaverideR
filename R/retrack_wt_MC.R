@@ -12,7 +12,7 @@
 #'does not take into account any small user errors during  the creation of the
 #'individual age-models nor does the averaging take into account the differences
 #'between the age-models and how the initial age-model of a certain proxy might
-#'be off in certain intervals. the link[WaverideR]{retrack_wt_MC} mitigates
+#'be off in certain intervals. the \link[WaverideR]{retrack_wt_MC} mitigates
 #'these problems by re-tracking periods of astronomical cycles in the wavelet
 #' spectra. The re-tracking is based on the information provided by the
 #' age-models constructed from the different proxy records.
@@ -34,14 +34,22 @@
 #' age-model is less-reliable in this interval.
 #'
 #'@param wt_list a list containing all the wavelet objects created using the
-#'link[WaverideR]{analyze_wavelet} wavelet function
-#'To create a list use the link[base]{list} function
+#'\link[WaverideR]{analyze_wavelet} wavelet function
+#'To create a list use the \link[base]{list} function
 #'@param data_track a matrix containing all the tracked period values.
-#'To create the matrix use the link[base]{cbind} function and only add the
+#'To create the matrix use the \link[base]{cbind} function and only add the
 #'tracked period values so do not add the depth axis. When combining the
 #'tracked period values make sure that all curves have a similar depth
 #'spacing.
 #'@param x_axis The x-axis of the tracked period values
+#'
+#'@param smoothing setting the smoothing parameter and value to either "auto" which uses
+#'a automatic loess smoother,"loess" where one can specify Lowess smoothing
+#' parameter. or "window" where one can specific the window length of the moving
+#' average. one should specify the parameter and its value as vector
+#'#'@param wt_list a list containing all the wavelet objects created using the
+#'\link[WaverideR]{analyze_wavelet} wavelet function
+#'To create a list use the \link[base]{list} function
 #'@param nr_simulations The number of Monte-Carlo simulations which are to be
 #' conducted\code{Default=50}
 #'@param seed_nr The seed number of the Monte-Carlo simulations.
@@ -448,9 +456,6 @@
 #' @importFrom graphics polygon
 #' @importFrom graphics title
 #' @importFrom grDevices rgb
-#' @importFrom WaveletComp analyze.wavelet
-#' @importFrom WaveletComp wt.image
-#' @importFrom biwavelet wt
 #' @importFrom astrochron mtm
 #' @importFrom DescTools Closest
 #' @importFrom graphics abline
@@ -512,10 +517,16 @@
 #' @importFrom grDevices png
 #' @importFrom astrochron sortNave
 #' @importFrom parallel stopCluster
+#' @importFrom parallel makeCluster
+#' @importFrom astrochron noLow
+#' @importFrom astrochron mwStats
+#' @importFrom doSNOW registerDoSNOW
+
 
 retrack_wt_MC <- function(wt_list = NULL,
                           data_track = NULL,
                           x_axis = NULL,
+                          smoothing = c("auto"),
                           nr_simulations = 50,
                           seed_nr = 1337,
                           verbose = FALSE,
@@ -545,6 +556,9 @@ retrack_wt_MC <- function(wt_list = NULL,
   simulations = nr_simulations
   img_animated <- NULL
 
+
+
+
   if (run_multicore == TRUE) {
     numCores <- detectCores()
     cl <- parallel::makeCluster(numCores - 2)
@@ -568,12 +582,10 @@ retrack_wt_MC <- function(wt_list = NULL,
 
   n_curves <- ncol(data_track)
 
-
-
   if (run_multicore == TRUE) {
     j <- 1 # needed to assign 1 to ijk to avoid note
     set.seed(seed_nr)
-    fit <-  foreach (j = 1:simulations, .options.snow = opts, .combine = 'cbind') %dopar% {
+    fit <-  foreach (j = 1:simulations, .options.parallel  = opts, .combine = 'cbind') %dopar% {
 
       sel_curve <- sample(1:n_curves, 1, replace=F)
       n <- n_curves
@@ -599,7 +611,26 @@ retrack_wt_MC <- function(wt_list = NULL,
 
       completed_curve <- astrochron::linterp(completed_curve,dt=x_axis[2]-x_axis[1],start=x_axis[1],genplot = FALSE,verbose=FALSE)
       completed_curve <- completed_curve[1:length(x_axis),]
-      completed_curve <- WaverideR::loess_auto(completed_curve)
+
+      if(smoothing[1]=="auto"){
+      completed_curve <- WaverideR::loess_auto(completed_curve)}
+
+      if(smoothing[1]=="loess"){
+        completed_curve <- astrochron::noLow(completed_curve,smooth=smoothing[2],output=2,genplot=F,verbose=F)
+
+      }
+      if(smoothing[1]=="window"){
+        completed_curve <- astrochron::mwStats(completed_curve,win=smoothing[2],conv=1,ends=T,CI=0,output=T,genplot=F,verbose=F)}
+
+
+
+
+
+
+
+      interp <- approx(completed_curve[, 1],
+                       completed_curve[, 2], x_axis, method = "linear")
+      completed_curve <- cbind(interp$x, interp$y)
       completed_curve <- completed_curve[,c(1,2)]
 
 
@@ -655,9 +686,14 @@ retrack_wt_MC <- function(wt_list = NULL,
     genplot = FALSE
   )
 
+
   completed_curve <- astrochron::linterp(completed_curve,dt=x_axis[2]-x_axis[1],start=x_axis[1],genplot = FALSE,verbose=FALSE)
   completed_curve <- completed_curve[1:length(x_axis),]
   completed_curve <- WaverideR::loess_auto(completed_curve)
+  interp <- approx(completed_curve[, 1],
+                   completed_curve[, 2], x_axis, method = "linear")
+  completed_curve <- cbind(interp$x, interp$y)
+
   completed_curve <- completed_curve[,c(1,2)]
 
 
@@ -686,9 +722,9 @@ retrack_wt_MC <- function(wt_list = NULL,
 
 
   sims_2 <- 1/fit
-  sims_mean_2 <- rowMeans(sims_2)
+  sims_mean_2 <- rowMeans(sims_2,na.rm = TRUE)
   sims_2 <-  as.matrix(sims_2)
-  sims_sd_2 <- matrixStats::rowSds(sims_2)
+  sims_sd_2 <- matrixStats::rowSds(sims_2,na.rm = TRUE)
 
   sed_run <- cbind(x_axis,sims_mean_2,sims_sd_2)
 

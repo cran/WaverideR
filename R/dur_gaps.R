@@ -50,6 +50,8 @@
 #'@param missing_cycle_unc_dist distribution of the uncertainty of the
 #'tracked cycle value need to be either "u" for uniform distribution or
 #'"n" for normal distribution  \code{Default="u"}
+#'@param seed_nr The seed number of the Monte-Carlo simulations.
+#' \code{Default=1337}
 #'@param run_multicore Run function using multiple cores \code{Default="FALSE"}
 #'
 #'@return
@@ -62,12 +64,8 @@
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @importFrom tcltk setTkProgressBar
-#' @importFrom tcltk setTkProgressBar
 #' @importFrom stats runif
 #' @importFrom stats rnorm
-
-
 
 
 
@@ -89,11 +87,15 @@ dur_gaps <- function(proxies = NULL,
                      n_cycles_missing = 1,
                      missing_cycle_unc = NULL,
                      missing_cycle_unc_dist = "u",
+                     seed_nr=1337,
                      run_multicore = FALSE) {
+
+
   if (run_multicore == TRUE) {
+    set.seed(seed_nr)
     j <- 1
     numCores <- detectCores()
-    cl <- makeCluster(numCores - 2)
+    cl <- parallel::makeCluster(numCores - 2)
     registerDoSNOW(cl)
 
     pb <- txtProgressBar(max = n_simulations, style = 3)
@@ -101,11 +103,10 @@ dur_gaps <- function(proxies = NULL,
       setTxtProgressBar(pb, n)
     opts <- list(progress = progress)
 
-
     dur_gaps <-
       foreach::foreach (
         j = 1:(n_simulations),
-        .options.snow = opts,
+        .options.parallel   = opts,
         .errorhandling = "remove",
         .packages = c("WaverideR", "stats"),
         .combine = "cbind"
@@ -128,19 +129,32 @@ dur_gaps <- function(proxies = NULL,
         proxy_nr <- floor(runif(1, min = 1, max = length(proxies)))
 
 
-        val_1 <-
-          rnorm(1, mean = retracked_period_1[1, 2], sd = retracked_period_1[1, 3])
-        pnorm_val_1 <-
-          pnorm(val_1, mean = retracked_period_1[1, 2], sd = retracked_period_1[1, 3],lower.tail = FALSE)
+        val_1 <- abs(
+          rnorm(1, mean = retracked_period_1[1, 2], sd = retracked_period_1[1, 3]))
+
+        pnorm_val_1 <-  pnorm(
+          val_1,
+          mean =retracked_period_1[1, 2],
+          sd = retracked_period_1[1, 3],
+          lower.tail = FALSE
+        )
+
+
         for (k in 1:nrow(new_curve_1)) {
           new_curve_1[k, 2] <-
             1/(qnorm(pnorm_val_1, mean = retracked_period_1[k, 2], sd = retracked_period_1[k, 3]))
         }
 
-        val_2 <-
-          rnorm(1, mean = retracked_period_2[1, 2], sd = retracked_period_2[1, 3])
-        pnorm_val_2 <-
-          1-pnorm(val_2, mean = retracked_period_2[1, 2], sd = retracked_period_2[1, 3],lower.tail = FALSE)
+        val_2 <- abs(
+          rnorm(1, mean = retracked_period_2[1, 2], sd = retracked_period_2[1, 3]))
+
+        pnorm_val_2 <-  pnorm(
+          val_2,
+          mean = retracked_period_2[1, 2],
+          sd = retracked_period_2[1, 3],
+          lower.tail = FALSE
+        )
+
         for (k in 1:nrow(new_curve_2)) {
           new_curve_2[k, 2] <-
             1/(qnorm(pnorm_val_2, mean = retracked_period_2[k, 2], sd = retracked_period_2[k, 3]))
@@ -239,6 +253,9 @@ dur_gaps <- function(proxies = NULL,
 
         peak_opt <- min_max[[proxy_nr]]
 
+
+        plot(tuned_1_wt_cycle)
+
         if (peak_opt == "min") {
           pts_tuned_1_wt_cycle <-
             min_detect(data = tuned_1_wt_cycle, pts = pts)
@@ -261,6 +278,7 @@ dur_gaps <- function(proxies = NULL,
       }
   } else {
     dur_gaps <- NA
+    set.seed(seed_nr)
     for (j in 1:n_simulations) {
       new_curve_1 <- matrix(
         data = NA,
@@ -280,19 +298,32 @@ dur_gaps <- function(proxies = NULL,
       proxy_nr <- floor(runif(1, min = 1, max = length(proxies)))
 
 
-      val_1 <-
-        rnorm(1, mean = retracked_period_1[1, 2], sd = retracked_period_1[1, 3])
-      pnorm_val_1 <-
-        1-pnorm(val_1, mean = retracked_period_1[1, 2], sd = retracked_period_1[1, 3],lower.tail = FALSE)
+      val_1 <- abs(
+        rnorm(1, mean = 1/retracked_period_1[1, 2], sd = 1/retracked_period_1[1, 3]))
+
+
+      pnorm_val_1 <-  pnorm(
+        1 / val_1,
+        mean = retracked_period_1[1, 2],
+        sd = retracked_period_1[1, 3],
+        lower.tail = FALSE
+      )
+
       for (k in 1:nrow(new_curve_1)) {
         new_curve_1[k, 2] <-
           1/(qnorm(pnorm_val_1, mean = retracked_period_1[k, 2], sd = retracked_period_1[k, 3]))
       }
 
-      val_2 <-
-        rnorm(1, mean = retracked_period_2[1, 2], sd = retracked_period_2[1, 3])
-      pnorm_val_2 <-
-        1-pnorm(val_2, mean = retracked_period_2[1, 2], sd = retracked_period_2[1, 3],lower.tail = FALSE)
+      val_2 <- abs(
+        rnorm(1, mean = 1/retracked_period_2[1, 2], sd = 1/retracked_period_2[1, 3]))
+
+      pnorm_val_2 <-  pnorm(
+        1 / val_1,
+        mean = retracked_period_2[1, 2],
+        sd = retracked_period_2[1, 3],
+        lower.tail = FALSE
+      )
+
       for (k in 1:nrow(new_curve_2)) {
         new_curve_2[k, 2] <-
           1/(qnorm(pnorm_val_2, mean = retracked_period_2[k, 2], sd = retracked_period_2[k, 3]))

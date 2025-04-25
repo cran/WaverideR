@@ -53,8 +53,8 @@
 #'@param depth_time_lab lable for the the depth/time column
 #'
 #' @author
-#' Code based on the \link[WaveletComp]{analyze.wavelet} and \link[WaveletComp]{wt.image} functions of the 'WaveletComp' R package
-#' and \link[biwavelet]{wt} function of the 'biwavelet' R package which are based on the
+#' Code based on the "analyze.wavelet" and "wt.image" functions of the 'WaveletComp' R package
+#' and  the "wt" function of the 'biwavelet' R package which are based on the
 #' wavelet MATLAB code written by Christopher Torrence and Gibert P. Compo (1998).
 #' The MTM analysis is from the astrochron R package of Meyers et al., (2012)
 #'@references
@@ -72,11 +72,10 @@
 #'Morlet, Jean, Georges Arens, Eliane Fourgeau, and Dominique Glard.
 #'"Wave propagation and sampling theory—Part I: Complex signal and scattering in multilayered media.
 #'" Geophysics 47, no. 2 (1982): 203-221.
-#'\url{https://pubs.geoscienceworld.org/geophysics/article/47/2/203/68601/Wave-propagation-and-sampling-theory-Part-I}
 #'
 #'J. Morlet, G. Arens, E. Fourgeau, D. Giard;
 #' Wave propagation and sampling theory; Part II, Sampling theory and complex waves.
-#'  Geophysics 1982 47 (2): 222–236. \url{https://pubs.geoscienceworld.org/geophysics/article/47/2/222/68604/Wave-propagation-and-sampling-theory-Part-II}
+#'  Geophysics 1982 47 (2): 222–236.
 #'
 #' @examples
 #' \donttest{
@@ -237,9 +236,6 @@
 #' @importFrom graphics layout
 #' @importFrom graphics title
 #' @importFrom grDevices rgb
-#' @importFrom WaveletComp analyze.wavelet
-#' @importFrom WaveletComp wt.image
-#' @importFrom biwavelet wt
 #' @importFrom astrochron mtm
 #' @importFrom DescTools Closest
 #' @importFrom graphics abline
@@ -319,12 +315,12 @@ add_wavelet <- function(wavelet = NULL,
                         yaxt = "s",
                         xaxt = "s",
                         depth_time_lab = "depth (m)"){
-
- power_max_mat.levels = quantile(wavelet$Power, probs = seq(
+  levels = quantile(wavelet$Power, probs = seq(
     from = 0,
     to = 1,
     length.out = n.levels + 1
   ))
+
 
   if (is.null(lower_depth_time) == TRUE) {
     lower_depth_time <- min(wavelet$x)
@@ -335,11 +331,12 @@ add_wavelet <- function(wavelet = NULL,
 
   xlim_vals <- c(lower_depth_time, upper_depth_time)
 
+
   if (is.null(lowerPeriod) == TRUE) {
-    lowerPeriod <- min(upperPeriod$Period)
+    lowerPeriod <- min(wavelet$Period)
   }
   if (is.null(upperPeriod) == TRUE) {
-    upperPeriod <- max(upperPeriod$Period)
+    upperPeriod <- max(wavelet$Period)
   }
 
   ylim_vals <- c(lowerPeriod, upperPeriod)
@@ -395,7 +392,12 @@ add_wavelet <- function(wavelet = NULL,
     key.cols = rev(eval(parse(text = color_brewer_Sel)))
   }
 
-  if (plot_horizontal == TRUE) {
+
+  maximum.level = max(wavelet$Power)
+  power_max_mat.levels = quantile(wavelet$Power, probs = seq(from = 0,
+                                                             to = 1, length.out = n.levels + 1))
+
+  if (plot_horizontal == FALSE) {
     image(
       y = wavelet$x,
       x = wavelet$axis.2,
@@ -485,9 +487,7 @@ add_wavelet <- function(wavelet = NULL,
 
 
 
-
-
-  if (plot_horizontal == FALSE) {
+  if (plot_horizontal == TRUE) {
     image(
       x = wavelet$x,
       y = wavelet$axis.2,
@@ -497,12 +497,13 @@ add_wavelet <- function(wavelet = NULL,
       useRaster = TRUE,
       xlab = depth_time_lab,
       ylab = periodlab,
-      xaxt = "n",
-      yaxt = yaxt ,
+      xaxt = "s",
+      yaxt = "n" ,
       main = main,
       xlim = xlim_vals,
       ylim = log2(c(lowerPeriod, upperPeriod))
     )
+
 
     if (plot.COI == TRUE) {
       polygon(
