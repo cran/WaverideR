@@ -1,7 +1,7 @@
 Package: WaverideR
 Type: Package
 Title: Extracting Signals from Wavelet Spectra
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: 
     person(given = "Michiel",
            family = "Arts",
@@ -22,6 +22,6 @@ NeedsCompilation: no
 Repository: CRAN
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Packaged: 2025-04-25 11:49:49 UTC; Administrator
+Packaged: 2025-04-26 15:47:50 UTC; Administrator
 Author: Michiel Arts [aut, cre] (<https://orcid.org/0000-0003-3181-4608>)
-Date/Publication: 2025-04-25 12:10:08 UTC
+Date/Publication: 2025-04-27 23:20:09 UTC

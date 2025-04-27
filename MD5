@@ -1,4 +1,4 @@
-6a5874e2a03e31c1fb357d1fe1e469c6 *DESCRIPTION
+dc2dff6cdf4fdeaa0c0f63e4959e0cc0 *DESCRIPTION
 841e6ce28039b48028c959fd2abb85ec *NAMESPACE
 01c5b8883879da7ae07733e5361a98e5 *NEWS.md
 d101eac537125029912b023a488b51fc *R/Hilbert_transform.R
@@ -47,7 +47,7 @@ a7a07acfcfa991f8073f21bd78b92c8e *R/plot_win_fft.R
 d922f2693095052906f6915750270ad4 *R/retrack_wt_MC.R
 2ba42c8d83bf6a81749587ab1a108030 *R/sedrate2tune.R
 fc81dff34f23ad84f150e18ddc109575 *R/sum_power_sedrate.R
-527e4380bcb5b14aa59ac55e281d4e13 *R/track_period_wavelet.R
+d77c5310eee973f62360507efd8cf464 *R/track_period_wavelet.R
 f7f1a7042acb935cd5174027dfc09f0c *R/tuning_pts.R
 62c7e25ab01666d573fbb44aaafaaaf5 *R/wavelet_uncertainty.R
 5aaecb5c25ba55e3c7855429abb6ea5f *R/win_fft.R
